@@ -11,10 +11,6 @@ internal sealed class WorkerService(ILogger<WorkerService> logger, Server server
 		{
 			await server.StartAsync(cancellationToken).ConfigureAwait(false);
 		}
-		catch (OperationCanceledException)
-		{
-			// Nothing.
-		}
 		catch (Exception exception)
 		{
 			logger.LogError(exception, "An exception has occurred.");

@@ -1,4 +1,4 @@
-﻿using System.Net;
+﻿using System.Collections.Concurrent;
 using Graphite.Eventing;
 using Graphite.Eventing.Sources.Server;
 using Microsoft.AspNetCore.Connections;
@@ -12,6 +12,7 @@ public sealed class Server(
 	EventDispatcher eventDispatcher) : IDisposable
 {
 	private readonly ILogger<Server> logger = loggerFactory.CreateLogger<Server>();
+	private readonly ConcurrentDictionary<byte, (Client Client, Task Exceution)> pairs = [];
 
 	private CancellationTokenSource? source;
 
@@ -19,10 +20,8 @@ public sealed class Server(
 	{
 		source = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
-		var endPoint = new IPEndPoint(IPAddress.Any, 25565);
-
 		var starting = await eventDispatcher
-			.DispatchAsync(new Starting(this, endPoint), source.Token)
+			.DispatchAsync(new Starting(this), source.Token)
 			.ConfigureAwait(false);
 
 		await using var listener = await listenerFactory
@@ -31,6 +30,34 @@ public sealed class Server(
 
 		logger.LogInformation("Started listening on: {endPoint}", starting.EndPoint);
 
+		byte identifier = 0;
+
+		while (!source.Token.IsCancellationRequested)
+		{
+			try
+			{
+				var connection = await listener.AcceptAsync(source.Token).ConfigureAwait(false);
+
+				var client = new Client(
+					loggerFactory.CreateLogger<Client>(),
+					connection!,
+					identifier);
+
+				pairs[identifier] = (client, ExecuteAsync(client));
+
+				identifier++;
+			}
+			catch (OperationCanceledException)
+			{
+				// Nothing.
+			}
+			catch (Exception exception)
+			{
+				logger.LogError(exception, "Unexpected exception while listening");
+				break;
+			}
+		}
+
 		var stopping = await eventDispatcher
 			.DispatchAsync(new Stopping(this), source.Token)
 			.ConfigureAwait(false);
@@ -38,7 +65,33 @@ public sealed class Server(
 		await listener.UnbindAsync(CancellationToken.None).ConfigureAwait(false);
 
 		logger.LogInformation("Unbound the listener. Stopped listening");
+
+		foreach (var pair in pairs.Values)
+		{
+			pair.Client.Stop(stopping.Reason);
+		}
+
+		await Task.WhenAll(pairs.Values.Select(pair => pair.Exceution))
+			.TimeoutAfter(stopping.Timeout)
+			.ConfigureAwait(false);
+
 		logger.LogInformation("Server stopped. Reason: {reason}", stopping.Reason);
+
+		return;
+
+		async Task ExecuteAsync(Client client)
+		{
+			await Task.Yield();
+
+			await client.StartAsync().ConfigureAwait(false);
+
+			client.Dispose();
+
+			if (!pairs.TryRemove(client.Identifier, out _))
+			{
+				logger.LogWarning("Failed to remove client");
+			}
+		}
 	}
 
 	public void Dispose()
