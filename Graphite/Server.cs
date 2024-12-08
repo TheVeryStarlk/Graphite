@@ -41,6 +41,7 @@ public sealed class Server(
 				var client = new Client(
 					loggerFactory.CreateLogger<Client>(),
 					connection!,
+					eventDispatcher,
 					identifier);
 
 				pairs[identifier] = (client, ExecuteAsync(client));

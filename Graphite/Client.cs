@@ -1,6 +1,9 @@
 ﻿using System.Buffers;
 using System.Threading.Channels;
+using Graphite.Eventing;
+using Graphite.Eventing.Sources.Client;
 using Graphite.Networking;
+using Graphite.Networking.Packets.Ingoing;
 using Graphite.Networking.Packets.Outgoing;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
@@ -10,6 +13,7 @@ namespace Graphite;
 public sealed class Client(
 	ILogger<Client> logger,
 	ConnectionContext connection,
+	EventDispatcher eventDispatcher,
 	byte identifier) : IAsyncDisposable
 {
 	public byte Identifier => identifier;
@@ -51,6 +55,8 @@ public sealed class Client(
 		{
 			await foreach (var packet in ingoing.Reader.ReadAllAsync(source.Token).ConfigureAwait(false))
 			{
+				var received = new ReceivedPacket(this, packet);
+				await eventDispatcher.DispatchAsync(received, source.Token).ConfigureAwait(false);
 			}
 		}
 		catch (Exception exception) when (exception is OperationCanceledException or ConnectionResetException)
@@ -62,7 +68,6 @@ public sealed class Client(
 			logger.LogError(exception, "Unexpected exception while handling client");
 		}
 
-
 		// We can't use the write method since the write loop has finished,
 		// hence we need to manually send the disconnect packet here.
 		try
@@ -72,6 +77,8 @@ public sealed class Client(
 				Reason = reason
 			};
 
+			// Disconnect packet's size is 64 without the type byte.
+			// So in total the whole payload is 65.
 			Span<byte> buffer = stackalloc byte[65];
 
 			Protocol.Write(buffer, packet);
