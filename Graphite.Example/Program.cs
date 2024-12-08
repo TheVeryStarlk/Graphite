@@ -21,6 +21,7 @@ host.UseSubscriber<Server>()
 
 		var logger = host.Services.GetRequiredService<ILogger<Program>>();
 		logger.LogInformation("Called from the event!");
-	});
+	})
+	.On<Stopping>(original => original.Reason = "Got tired!");
 
 host.Run();

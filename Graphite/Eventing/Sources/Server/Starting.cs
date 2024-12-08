@@ -2,7 +2,7 @@
 
 namespace Graphite.Eventing.Sources.Server;
 
-public sealed class Starting : Event<Graphite.Server>
+public sealed class Starting(Graphite.Server server, IPEndPoint endPoint) : Event<Graphite.Server>(server)
 {
-	public IPEndPoint EndPoint { get; set; } = new(IPAddress.Any, 25565);
+	public IPEndPoint EndPoint { get; set; } = endPoint;
 }
