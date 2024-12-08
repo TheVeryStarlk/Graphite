@@ -84,8 +84,7 @@ public sealed class Server(
 			await Task.Yield();
 
 			await client.StartAsync().ConfigureAwait(false);
-
-			client.Dispose();
+			await client.DisposeAsync().ConfigureAwait(false);
 
 			if (!pairs.TryRemove(client.Identifier, out _))
 			{
