@@ -1,8 +1,10 @@
 ﻿using Graphite;
 using Graphite.Eventing.Sources.Client;
-using Graphite.Eventing.Sources.Server;
 using Graphite.Hosting;
+using Graphite.Networking;
 using Graphite.Networking.Packets.Ingoing;
+using Graphite.Networking.Packets.Outgoing;
+using Graphite.Worlds;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -14,21 +16,56 @@ builder.Services.AddGraphite();
 
 var host = builder.Build();
 
-host.UseSubscriber<Client>()
-	.On<ReceivedPacket>(original =>
-	{
-		if (original.Packet is not PlayerIdentificationPacket identificationPacket)
-		{
-			return;
-		}
+var world = new World("Default");
 
-		if (identificationPacket.VerificationKey != "Secret")
+host.UseSubscriber<Client>()
+	.On<ReceivedPacket>(async (original, _) =>
+	{
+		switch (original.Packet)
 		{
-			original.Source.Stop("Incorrect verification key.");
+			case PlayerIdentificationPacket:
+				var parts = world.Serialize();
+				var packets = new IOutgoingPacket[parts.Length];
+
+				for (var index = 0; index < packets.Length; index++)
+				{
+					packets[index] = new WorldPacket
+					{
+						Blocks = parts[index],
+						PercentComplete = (byte) (index / (float) (packets.Length - 1) * 100)
+					};
+				}
+
+				await original.Source.WriteAsync(
+				[
+					new ServerIdentificationPacket
+					{
+						Name = "Graphite",
+						MessageOfTheDay = "Hello, world!",
+						IsOperator = 0
+					},
+					.. packets,
+					new WorldInitializePacket(),
+					new WorldFinalizePacket
+					{
+						Width = world.Width,
+						Height = world.Height,
+						Length = world.Length
+					},
+					new SpawnPlayerPacket
+					{
+						Identifier = 0xFF,
+						Username = "Starlk",
+						X = 64,
+						Y = 64,
+						Z = 64,
+						Yaw = 0,
+						Pitch = 0
+					}
+				]);
+				break;
 		}
 	});
 
-host.UseSubscriber<Server>()
-	.On<Stopping>(original => original.Reason = "Got tired!");
 
 host.Run();

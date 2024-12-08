@@ -3,7 +3,6 @@ using System.Threading.Channels;
 using Graphite.Eventing;
 using Graphite.Eventing.Sources.Client;
 using Graphite.Networking;
-using Graphite.Networking.Packets.Ingoing;
 using Graphite.Networking.Packets.Outgoing;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
