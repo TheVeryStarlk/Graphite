@@ -1,6 +1,3 @@
 ﻿namespace Graphite.Eventing;
 
-public abstract class Event<T>(T source)
-{
-	public T Source => source;
-}
+public abstract record Event<T>(T Source);
