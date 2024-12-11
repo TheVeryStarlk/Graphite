@@ -4,47 +4,40 @@ namespace Graphite.Eventing;
 
 public sealed class EventDispatcher(ILogger<EventDispatcher> logger)
 {
-	private readonly Dictionary<Type, List<(Delegate Callback, Priority Priority)>> types = [];
+	private readonly Dictionary<Type, Delegate> events = [];
 
-	public void Register(Type type, Delegate callback, Priority priority)
+	public void Register(Type type, Delegate callback)
 	{
-		if (types.TryGetValue(type, out var pairs))
+		if (!events.TryAdd(type, callback))
 		{
-			pairs.Add((callback, priority));
-		}
-		else
-		{
-			types.Add(type, [(callback, priority)]);
+			throw new InvalidOperationException("Event is already registered.");
 		}
 	}
 
 	public async Task<T> DispatchAsync<T>(T original, CancellationToken cancellationToken)
 	{
-		if (!types.TryGetValue(typeof(T), out var events))
+		if (!events.TryGetValue(typeof(T), out var value))
 		{
 			return original;
 		}
 
-		foreach (var pair in events.OrderBy(pair => pair.Priority))
+		try
 		{
-			try
+			switch (value)
 			{
-				switch (pair.Callback)
-				{
-					case TaskDelegate<T> taskDelegate:
-						await taskDelegate(original, cancellationToken).ConfigureAwait(false);
-						break;
+				case TaskDelegate<T> @delegate:
+					await @delegate(original, cancellationToken).ConfigureAwait(false);
+					break;
 
-					case Action<T> action:
-						action(original);
-						break;
-				}
+				case Action<T> action:
+					action(original);
+					break;
 			}
-			catch (Exception exception)
-			{
-				logger.LogError(exception, "An exception occurred while running event.");
-				types.Remove(typeof(T));
-			}
+		}
+		catch (Exception exception)
+		{
+			logger.LogError(exception, "An exception occurred while running event.");
+			events.Remove(typeof(T));
 		}
 
 		return original;

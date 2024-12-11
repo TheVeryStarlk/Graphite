@@ -1,7 +1,6 @@
 ﻿using System.Buffers;
 using System.Threading.Channels;
 using Graphite.Eventing;
-using Graphite.Eventing.Sources.Client;
 using Graphite.Networking;
 using Graphite.Networking.Packets.Outgoing;
 using Microsoft.AspNetCore.Connections;
@@ -54,8 +53,6 @@ public sealed class Client(
 		{
 			await foreach (var packet in ingoing.Reader.ReadAllAsync(source.Token).ConfigureAwait(false))
 			{
-				var received = new ReceivedPacket(this, packet);
-				await eventDispatcher.DispatchAsync(received, source.Token).ConfigureAwait(false);
 			}
 		}
 		catch (Exception exception) when (exception is OperationCanceledException or ConnectionResetException)
