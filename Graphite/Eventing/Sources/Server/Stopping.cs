@@ -1,6 +1,8 @@
 ﻿namespace Graphite.Eventing.Sources.Server;
 
-public sealed record Stopping(Graphite.Server Server, string Reason) : Event<Graphite.Server>(Server)
+public sealed class Stopping(Graphite.Server server, string reason) : Event<Graphite.Server>(server)
 {
+	public string Reason => reason;
+
 	public TimeSpan Timeout { get; set; } = TimeSpan.FromMinutes(1);
 }
