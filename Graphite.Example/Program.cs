@@ -1,4 +1,6 @@
-﻿using Graphite.Hosting;
+﻿using Graphite;
+using Graphite.Eventing.Sources.Server;
+using Graphite.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -9,5 +11,8 @@ builder.Logging.SetMinimumLevel(LogLevel.Trace);
 builder.Services.AddGraphite();
 
 var host = builder.Build();
+
+host.UseSubscriber<Server>()
+	.On<Starting>(starting => starting.Source.Stop("Not now!"));
 
 host.Run();

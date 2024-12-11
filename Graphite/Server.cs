@@ -14,6 +14,7 @@ public sealed class Server(
 	private readonly ILogger<Server> logger = loggerFactory.CreateLogger<Server>();
 	private readonly ConcurrentDictionary<byte, (Client Client, Task Exceution)> pairs = [];
 
+	private string reason = "Server stopped.";
 	private CancellationTokenSource? source;
 
 	public async Task StartAsync(CancellationToken cancellationToken)
@@ -60,7 +61,7 @@ public sealed class Server(
 		}
 
 		var stopping = await eventDispatcher
-			.DispatchAsync(new Stopping(this), source.Token)
+			.DispatchAsync(new Stopping(this, reason), source.Token)
 			.ConfigureAwait(false);
 
 		await listener.UnbindAsync(CancellationToken.None).ConfigureAwait(false);
@@ -92,6 +93,12 @@ public sealed class Server(
 				logger.LogWarning("Failed to remove client");
 			}
 		}
+	}
+
+	public void Stop(string stop)
+	{
+		reason = stop;
+		source?.Cancel();
 	}
 
 	public void Dispose()
