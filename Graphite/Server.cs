@@ -49,7 +49,7 @@ public sealed class Server : IDisposable
 			.BindAsync(starting.EndPoint, source.Token)
 			.ConfigureAwait(false);
 
-		logger.LogInformation("Started listening on: {endPoint}", starting.EndPoint);
+		logger.LogInformation("Started listening on: \"{endPoint}\"", starting.EndPoint);
 
 		byte identifier = 0;
 

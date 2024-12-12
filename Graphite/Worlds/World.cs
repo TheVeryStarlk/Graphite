@@ -12,11 +12,9 @@ public sealed class World
 
 	public short Length { get; }
 
-	public Block this[short x, short y, short z]
-	{
-		get => blocks[x + Width * (z + y * Length)];
-		private set => blocks[x + Width * (z + y * Length)] = value;
-	}
+	public IEnumerable<Block> Blocks => blocks;
+
+	public Block this[short x, short y, short z] => blocks[x + Width * (z + y * Length)];
 
 	private readonly Block[] blocks;
 	private readonly Server server;

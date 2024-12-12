@@ -15,14 +15,18 @@ public sealed class WorldContainer(ILogger<WorldContainer> logger, Server server
 		short height = 64,
 		short length = 128)
 	{
+		if (worlds.ContainsKey(name))
+		{
+			throw new InvalidOperationException("World is already registered.");
+		}
+
 		var world = new World(server, name, width, height, length);
 
 		await generator.GenerateAsync(world).ConfigureAwait(false);
 
-		if (!worlds.TryAdd(name, world))
-		{
-			throw new InvalidOperationException("World is already registered.");
-		}
+		worlds[name] = world;
+
+		logger.LogInformation("Created world: \"{Name}\"", name);
 	}
 
 	public void Delete(string name)
