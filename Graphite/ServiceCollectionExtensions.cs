@@ -1,0 +1,33 @@
+﻿using Graphite.Abstractions.Worlds;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+
+namespace Graphite;
+
+public static class ServiceCollectionExtensions
+{
+	public static IServiceCollection AddGraphite<T>(this IServiceCollection services) where T : Controller
+	{
+		services.AddSingleton<Controller, T>();
+		services.AddTransient<Listener>();
+		services.AddSingleton<IWorldContainer, WorldContainer>();
+
+		services.AddSingleton<EventDispatcher>();
+
+		services.AddHostedService<WorkerService>();
+
+		services.AddTransient<IConnectionListenerFactory>(provider => new SocketTransportFactory(
+			Options.Create(new SocketTransportOptions()),
+			provider.GetRequiredService<ILoggerFactory>()));
+
+		services.AddTransient<Func<ConnectionContext, Client>>(provider =>
+			connection => new Client(
+				provider.GetRequiredService<ILogger<Client>>(),
+				connection));
+
+		return services;
+	}
+}

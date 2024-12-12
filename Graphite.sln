@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Graphite", "Graphite\Graphi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Graphite.Example", "Graphite.Example\Graphite.Example.csproj", "{8CE7684A-5C08-4CC4-84D2-2976AC418A02}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Graphite.Abstractions", "Graphite.Abstractions\Graphite.Abstractions.csproj", "{F508F196-5854-48DD-80CA-67156C0302AA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{8CE7684A-5C08-4CC4-84D2-2976AC418A02}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8CE7684A-5C08-4CC4-84D2-2976AC418A02}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8CE7684A-5C08-4CC4-84D2-2976AC418A02}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F508F196-5854-48DD-80CA-67156C0302AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F508F196-5854-48DD-80CA-67156C0302AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F508F196-5854-48DD-80CA-67156C0302AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F508F196-5854-48DD-80CA-67156C0302AA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
