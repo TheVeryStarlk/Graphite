@@ -1,0 +1,61 @@
+﻿namespace Graphite.Abstractions.Worlds;
+
+public enum Block : byte
+{
+	Air,
+	Stone,
+	Grass,
+	Dirt,
+	Cobblestone,
+	Wood,
+	Sapling,
+	Bedrock,
+	Water,
+	StillWater,
+	Lava,
+	StillLava,
+	Sand,
+	Gravel,
+	GoldOre,
+	IronOre,
+	CoalOre,
+	Log,
+	Leaves,
+	Sponge,
+	Glass,
+	Red,
+	Orange,
+	Yellow,
+	Lime,
+	Green,
+	Teal,
+	Aqua,
+	Cyan,
+	Blue,
+	Indigo,
+	Violet,
+	Magenta,
+	Pink,
+	Black,
+	Gray,
+	White,
+	Dandelion,
+	Rose,
+	Mushroom,
+	RedMushroom,
+	Gold,
+	Iron,
+	DoubleSlab,
+	Slab,
+	Brick,
+	Explosive,
+	Bookshelf,
+	MossyRocks,
+	Obsidian
+}
+
+public enum PlacementMode : byte
+{
+	Destroyed,
+	Created
+}
