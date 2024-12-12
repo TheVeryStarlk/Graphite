@@ -1,11 +1,14 @@
-﻿using Graphite.Abstractions.Worlds;
+﻿using Graphite.Abstractions.Eventing;
+using Graphite.Abstractions.Worlds;
+using Graphite.Eventing;
+using Graphite.Worlds;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Graphite;
+namespace Graphite.Hosting;
 
 public static class ServiceCollectionExtensions
 {

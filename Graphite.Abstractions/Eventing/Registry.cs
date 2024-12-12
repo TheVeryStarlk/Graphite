@@ -1,4 +1,4 @@
-﻿namespace Graphite;
+﻿namespace Graphite.Abstractions.Eventing;
 
 public sealed class Registry
 {

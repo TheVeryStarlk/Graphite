@@ -1,6 +1,4 @@
-﻿using Graphite.Abstractions.Eventing;
-
-namespace Graphite;
+﻿namespace Graphite.Abstractions.Eventing;
 
 public sealed class Subscriber<TSource>(IDictionary<Type, Delegate> events)
 {

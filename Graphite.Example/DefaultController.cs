@@ -1,4 +1,5 @@
 ﻿using Graphite.Abstractions;
+using Graphite.Abstractions.Eventing;
 using Graphite.Abstractions.Eventing.Sources.Listener;
 using Graphite.Abstractions.Worlds;
 

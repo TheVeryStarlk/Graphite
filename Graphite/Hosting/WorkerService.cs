@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Hosting;
 
-namespace Graphite;
+namespace Graphite.Hosting;
 
 internal sealed class WorkerService(Listener listener) : BackgroundService
 {

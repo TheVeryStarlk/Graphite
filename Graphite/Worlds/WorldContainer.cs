@@ -1,7 +1,7 @@
 ﻿using Graphite.Abstractions.Worlds;
 using Microsoft.Extensions.Logging;
 
-namespace Graphite;
+namespace Graphite.Worlds;
 
 internal sealed class WorldContainer(ILogger<WorldContainer> logger) : IWorldContainer
 {

@@ -1,6 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Graphite.Abstractions.Eventing;
+using Microsoft.Extensions.Logging;
 
-namespace Graphite;
+namespace Graphite.Eventing;
 
 internal sealed class EventDispatcher
 {

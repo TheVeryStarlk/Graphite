@@ -1,5 +1,6 @@
 ﻿using Graphite.Abstractions;
 using Graphite.Abstractions.Eventing.Sources.Listener;
+using Graphite.Eventing;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 
