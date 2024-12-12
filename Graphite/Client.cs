@@ -4,7 +4,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Graphite;
 
-internal sealed class Client(ILogger<Client> logger, ConnectionContext connection) : IClient, IDisposable
+internal sealed class Client(
+	ILogger<Client> logger,
+	ConnectionContext connection,
+	PlayerStore playerStore) : IClient, IDisposable
 {
 	private string reason = "No reason specified.";
 	private CancellationTokenSource? source;
