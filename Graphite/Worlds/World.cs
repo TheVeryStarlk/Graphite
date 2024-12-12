@@ -19,12 +19,15 @@ public sealed class World
 	}
 
 	private readonly Block[] blocks;
+	private readonly Server server;
 
-	public World(string name, short width = 128, short height = 64, short length = 128)
+	public World(Server server, string name, short width = 128, short height = 64, short length = 128)
 	{
 		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
 		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
 		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(length);
+
+		this.server = server;
 
 		Name = name;
 		Width = width;

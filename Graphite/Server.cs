@@ -1,21 +1,41 @@
 ﻿using System.Collections.Concurrent;
 using Graphite.Eventing;
 using Graphite.Eventing.Sources.Server;
+using Graphite.Worlds;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 
 namespace Graphite;
 
-public sealed class Server(
-	ILoggerFactory loggerFactory,
-	IConnectionListenerFactory listenerFactory,
-	EventDispatcher eventDispatcher) : IDisposable
+public sealed class Server : IDisposable
 {
-	private readonly ILogger<Server> logger = loggerFactory.CreateLogger<Server>();
-	private readonly ConcurrentDictionary<byte, (Client Client, Task Exceution)> pairs = [];
+	public WorldContainer WorldContainer { get; private set; }
 
 	private string reason = "Server stopped.";
 	private CancellationTokenSource? source;
+
+	private readonly ILogger<Server> logger;
+	private readonly ConcurrentDictionary<byte, (Client Client, Task Exceution)> pairs = [];
+
+	private readonly ILoggerFactory loggerFactory;
+	private readonly IConnectionListenerFactory listenerFactory;
+	private readonly EventDispatcher eventDispatcher;
+	private readonly Func<ConnectionContext, byte, Client> clientFactory;
+
+	public Server(ILoggerFactory loggerFactory,
+		IConnectionListenerFactory listenerFactory,
+		EventDispatcher eventDispatcher,
+		Func<ConnectionContext, byte, Client> clientFactory,
+		Func<Server, WorldContainer> worldContainerFactory)
+	{
+		this.loggerFactory = loggerFactory;
+		this.listenerFactory = listenerFactory;
+		this.eventDispatcher = eventDispatcher;
+		this.clientFactory = clientFactory;
+
+		WorldContainer = worldContainerFactory(this);
+		logger = loggerFactory.CreateLogger<Server>();
+	}
 
 	public async Task StartAsync(CancellationToken cancellationToken)
 	{
@@ -39,11 +59,7 @@ public sealed class Server(
 			{
 				var connection = await listener.AcceptAsync(source.Token).ConfigureAwait(false);
 
-				var client = new Client(
-					loggerFactory.CreateLogger<Client>(),
-					connection!,
-					eventDispatcher,
-					identifier);
+				var client = clientFactory(connection!, identifier);
 
 				pairs[identifier] = (client, ExecuteAsync(client));
 
