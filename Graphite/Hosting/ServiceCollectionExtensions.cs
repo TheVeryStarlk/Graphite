@@ -28,11 +28,11 @@ public static class ServiceCollectionExtensions
 			Options.Create(new SocketTransportOptions()),
 			provider.GetRequiredService<ILoggerFactory>()));
 
-		services.AddTransient<Func<ConnectionContext, PlayerStore, Client>>(provider =>
-			(connection, playerStore) => new Client(
+		services.AddTransient<Func<ConnectionContext, Client>>(provider =>
+			connection => new Client(
 				provider.GetRequiredService<ILogger<Client>>(),
 				connection,
-				playerStore));
+				provider.GetRequiredService<PlayerStore>()));
 
 		return services;
 	}
