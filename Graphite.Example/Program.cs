@@ -1,4 +1,5 @@
 ﻿using Graphite;
+using Graphite.Eventing.Sources.Player;
 using Graphite.Eventing.Sources.Server;
 using Graphite.Hosting;
 using Graphite.Worlds;
@@ -13,11 +14,21 @@ builder.Services.AddGraphite();
 
 var host = builder.Build();
 
+const string name = "Default";
+
 host.UseSubscriber<Server>()
 	.On<Starting>(async (starting, _) =>
 	{
 		var worldContainer = starting.Source.WorldContainer;
-		await worldContainer.CreateAsync("Default", new EmptyGenerator());
+		await worldContainer.CreateAsync(name, new EmptyGenerator());
+	})
+	.On<Stopping>(stopping => stopping.Source.WorldContainer.Delete(name));
+
+host.UseSubscriber<Player>()
+	.On<Joining>(async (joining, _) =>
+	{
+		var world = joining.Source.Server.WorldContainer.Worlds[name];
+		await joining.Source.SpawnAsync(world);
 	});
 
 host.Run();

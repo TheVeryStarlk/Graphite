@@ -14,9 +14,10 @@ public static class ServiceCollectionExtensions
 	{
 		services.AddSingleton<EventDispatcher>();
 
-		services.AddTransient<Func<ConnectionContext, byte, Client>>(provider =>
-			(connection, identifier) => new Client(
+		services.AddTransient<Func<Server, ConnectionContext, byte, Client>>(provider =>
+			(server, connection, identifier) => new Client(
 				provider.GetRequiredService<ILogger<Client>>(),
+				server,
 				connection,
 				provider.GetRequiredService<EventDispatcher>(),
 				identifier));

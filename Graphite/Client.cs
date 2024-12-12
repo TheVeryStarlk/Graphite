@@ -1,7 +1,9 @@
 ﻿using System.Buffers;
 using System.Threading.Channels;
 using Graphite.Eventing;
+using Graphite.Eventing.Sources.Player;
 using Graphite.Networking;
+using Graphite.Networking.Packets.Ingoing;
 using Graphite.Networking.Packets.Outgoing;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
@@ -10,10 +12,13 @@ namespace Graphite;
 
 public sealed class Client(
 	ILogger<Client> logger,
+	Server server,
 	ConnectionContext connection,
 	EventDispatcher eventDispatcher,
 	byte identifier) : IAsyncDisposable
 {
+	public Player? Player { get; private set; }
+
 	public byte Identifier => identifier;
 
 	private readonly Channel<IPacket> ingoing = Channel.CreateUnbounded<IPacket>();
@@ -53,6 +58,32 @@ public sealed class Client(
 		{
 			await foreach (var packet in ingoing.Reader.ReadAllAsync(source.Token).ConfigureAwait(false))
 			{
+				switch (packet)
+				{
+					case PlayerIdentificationPacket current:
+						Player = new Player(this, server, current.Username);
+
+						var joining = new Joining(
+							Player,
+							current.ProtocolVersion,
+							current.Username,
+							current.VerificationKey,
+							current.Unused);
+
+						joining = await eventDispatcher
+							.DispatchAsync(joining, source.Token)
+							.ConfigureAwait(false);
+
+						await outgoing.Writer.WriteAsync(
+							new ServerIdentificationPacket
+							{
+								Name = joining.Name,
+								MessageOfTheDay = joining.MessageOfTheDay,
+								IsOperator = joining.IsOperator
+							}).ConfigureAwait(false);
+
+						break;
+				}
 			}
 		}
 		catch (Exception exception) when (exception is OperationCanceledException or ConnectionResetException)

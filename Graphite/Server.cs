@@ -20,12 +20,12 @@ public sealed class Server : IDisposable
 	private readonly ILoggerFactory loggerFactory;
 	private readonly IConnectionListenerFactory listenerFactory;
 	private readonly EventDispatcher eventDispatcher;
-	private readonly Func<ConnectionContext, byte, Client> clientFactory;
+	private readonly Func<Server, ConnectionContext, byte, Client> clientFactory;
 
 	public Server(ILoggerFactory loggerFactory,
 		IConnectionListenerFactory listenerFactory,
 		EventDispatcher eventDispatcher,
-		Func<ConnectionContext, byte, Client> clientFactory,
+		Func<Server, ConnectionContext, byte, Client> clientFactory,
 		Func<Server, WorldContainer> worldContainerFactory)
 	{
 		this.loggerFactory = loggerFactory;
@@ -59,7 +59,7 @@ public sealed class Server : IDisposable
 			{
 				var connection = await listener.AcceptAsync(source.Token).ConfigureAwait(false);
 
-				var client = clientFactory(connection!, identifier);
+				var client = clientFactory(this, connection!, identifier);
 
 				pairs[identifier] = (client, ExecuteAsync(client));
 
