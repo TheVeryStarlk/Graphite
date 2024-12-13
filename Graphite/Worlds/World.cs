@@ -6,31 +6,33 @@ namespace Graphite.Worlds;
 
 internal sealed class World(string name, short width, short height, short length) : IWorld
 {
-    public string Name => name;
+	public string Name => name;
 
-    public short Width => width;
+	public short Width => width;
 
-    public short Height => height;
+	public short Height => height;
 
-    public short Length => length;
+	public short Length => length;
 
-    public Block this[short x, short y, short z] => blocks[x + Width * (z + y * Length)];
+	public Block this[short x, short y, short z] => blocks[x + Width * (z + y * Length)];
 
-    private readonly Block[] blocks = new Block[width * height * length];
+	internal Block[] Blocks => blocks;
 
-    public byte[][] Serialize()
-    {
-        using var result = new MemoryStream();
-        using var compression = new GZipStream(result, CompressionMode.Compress);
+	private readonly Block[] blocks = new Block[width * height * length];
 
-        Span<byte> buffer = stackalloc byte[sizeof(int)];
-        BinaryPrimitives.WriteInt32BigEndian(buffer, blocks.Length);
+	public byte[][] Serialize()
+	{
+		using var result = new MemoryStream();
+		using var compression = new GZipStream(result, CompressionMode.Compress);
 
-        compression.Write(buffer);
-        compression.Write(blocks.Cast<byte>().ToArray());
+		Span<byte> buffer = stackalloc byte[sizeof(int)];
+		BinaryPrimitives.WriteInt32BigEndian(buffer, blocks.Length);
 
-        compression.Close();
+		compression.Write(buffer);
+		compression.Write(blocks.Cast<byte>().ToArray());
 
-        return result.ToArray().Chunk(1024).ToArray();
-    }
+		compression.Close();
+
+		return result.ToArray().Chunk(1024).ToArray();
+	}
 }

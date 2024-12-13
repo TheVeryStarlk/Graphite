@@ -31,7 +31,7 @@ public static class ServiceCollectionExtensions
 		services.AddTransient<Func<ConnectionContext, byte, Client>>(provider =>
 			(connection, identifier) => new Client(
 				provider.GetRequiredService<ILogger<Client>>(),
-				provider.GetRequiredService<PlayerStore, IPlayerStore>(),
+				(PlayerStore) provider.GetRequiredService<IPlayerStore>(),
 				provider.GetRequiredService<EventDispatcher>(),
 				connection,
 				identifier));

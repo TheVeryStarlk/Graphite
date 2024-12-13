@@ -10,7 +10,13 @@ public interface IPlayer
 
 	public IWorld? World { get; }
 
-	public ValueTask SpawnAsync(IWorld world);
+	public ValueTask SpawnAsync(
+		IWorld world,
+		float x = 0,
+		float y = 0,
+		float z = 0,
+		byte yaw = 0,
+		byte pitch = 0);
 
 	public void Kick(string reason);
 }

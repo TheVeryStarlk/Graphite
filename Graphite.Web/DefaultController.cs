@@ -21,16 +21,14 @@ internal sealed class DefaultController(
 		{
 			logger.LogInformation("Registering player events...");
 
-			subscriber.On<Joining>(joining =>
+			subscriber.On<Joining>(async (joining, _) =>
 			{
 				logger.LogInformation("Someone is joining");
 
-				var count = playerStore.Players.Keys.Count(key => key == joining.Username);
+				var player = playerStore.Players[joining.Username];
+				var world = worldContainer.Worlds["Default"];
 
-				if (count > 1)
-				{
-					logger.LogWarning("Duplicate found!");
-				}
+				await player.SpawnAsync(world);
 			});
 		});
 	}
