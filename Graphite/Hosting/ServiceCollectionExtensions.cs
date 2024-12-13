@@ -19,8 +19,8 @@ public static class ServiceCollectionExtensions
 
 		services.AddSingleton<Controller, T>();
 		services.AddSingleton<IWorldContainer, WorldContainer>();
-		services.AddSingleton<EventDispatcher>();
 		services.AddSingleton<IPlayerStore, PlayerStore>();
+		services.AddSingleton<EventDispatcher>();
 
 		services.AddTransient<Listener>();
 
@@ -28,11 +28,13 @@ public static class ServiceCollectionExtensions
 			Options.Create(new SocketTransportOptions()),
 			provider.GetRequiredService<ILoggerFactory>()));
 
-		services.AddTransient<Func<ConnectionContext, Client>>(provider =>
-			connection => new Client(
+		services.AddTransient<Func<ConnectionContext, byte, Client>>(provider =>
+			(connection, identifier) => new Client(
 				provider.GetRequiredService<ILogger<Client>>(),
+				provider.GetRequiredService<PlayerStore, IPlayerStore>(),
+				provider.GetRequiredService<EventDispatcher>(),
 				connection,
-				provider.GetRequiredService<PlayerStore>()));
+				identifier));
 
 		return services;
 	}

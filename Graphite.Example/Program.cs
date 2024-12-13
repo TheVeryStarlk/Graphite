@@ -1,5 +1,4 @@
-﻿using Graphite;
-using Graphite.Example;
+﻿using Graphite.Example;
 using Graphite.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

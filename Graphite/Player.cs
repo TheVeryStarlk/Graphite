@@ -1,14 +1,23 @@
 ﻿using Graphite.Abstractions;
+using Graphite.Abstractions.Worlds;
 
 namespace Graphite;
 
-internal sealed class Player(Client client, string name) : IPlayer
+internal sealed class Player(Client client, string username) : IPlayer
 {
 	public IClient Client => client;
 
-	public string Name => name;
+	public string Username => username;
 
-	public void Kick(string reason)
+    public IWorld? World { get; private set; }
+
+    public ValueTask SpawnAsync(IWorld world)
+    {
+        World = world;
+        return ValueTask.CompletedTask;
+    }
+
+    public void Kick(string reason)
 	{
 		client.Stop(reason);
 	}

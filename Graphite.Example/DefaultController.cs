@@ -4,7 +4,6 @@ using Graphite.Abstractions.Eventing.Sources.Listener;
 using Graphite.Abstractions.Eventing.Sources.Player;
 using Graphite.Abstractions.Worlds;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.EventLog;
 
 namespace Graphite.Example;
 
@@ -16,18 +15,22 @@ internal sealed class DefaultController(
 	public override void Register(Registry registry)
 	{
 		registry.For<IListener>(subscriber =>
-			subscriber.On<Starting>((_, _) =>
+			subscriber.On<Starting>(_ =>
 				worldContainer.Create("Default")));
 
 		registry.For<IPlayer>(subscriber =>
 		{
 			logger.LogInformation("Registering player events...");
 
-			subscriber.On<Joining>((player, _) =>
+			subscriber.On<Joining>(joining =>
 			{
-				if (playerStore.Players.ContainsKey(player.Name))
+				logger.LogInformation("Someone is joining");
+
+				var count = playerStore.Players.Keys.Count(key => key == joining.Username);
+
+				if (count > 1)
 				{
-					player.Kick("Duplicate name!");
+					logger.LogWarning("Duplicate found!");
 				}
 			});
 		});
