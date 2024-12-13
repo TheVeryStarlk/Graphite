@@ -1,31 +1,31 @@
-﻿using System.Buffers;
-using System.Threading.Channels;
+﻿using Graphite.Abstractions;
+using Graphite.Abstractions.Eventing.Sources.Player;
+using Graphite.Abstractions.Networking;
+using Graphite.Abstractions.Networking.Packets.Ingoing;
+using Graphite.Abstractions.Networking.Packets.Outgoing;
 using Graphite.Eventing;
-using Graphite.Eventing.Sources.Player;
-using Graphite.Networking;
-using Graphite.Networking.Packets.Ingoing;
-using Graphite.Networking.Packets.Outgoing;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
+using System.Buffers;
+using System.Threading.Channels;
 
 namespace Graphite;
 
-public sealed class Client(
+internal sealed class Client(
 	ILogger<Client> logger,
-	Server server,
-	ConnectionContext connection,
+	PlayerStore playerStore,
 	EventDispatcher eventDispatcher,
-	byte identifier) : IAsyncDisposable
+	ConnectionContext connection,
+	byte identifier) : IClient, IDisposable
 {
-	public Player? Player { get; private set; }
-
 	public byte Identifier => identifier;
 
 	private readonly Channel<IPacket> ingoing = Channel.CreateUnbounded<IPacket>();
 	private readonly Channel<IOutgoingPacket> outgoing = Channel.CreateUnbounded<IOutgoingPacket>();
 	private readonly CancellationTokenSource source = CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionClosed);
 
-	private string reason = "You have been disconnected from the server.";
+	private string reason = "No reason specified.";
+	private Player? player;
 
 	public Task StartAsync()
 	{
@@ -40,18 +40,6 @@ public sealed class Client(
 		}
 	}
 
-	public void Stop(string stop)
-	{
-		reason = stop;
-		source.Cancel();
-	}
-
-	public async ValueTask DisposeAsync()
-	{
-		source.Dispose();
-		await connection.DisposeAsync().ConfigureAwait(false);
-	}
-
 	private async Task HandlingAsync()
 	{
 		try
@@ -61,27 +49,26 @@ public sealed class Client(
 				switch (packet)
 				{
 					case PlayerIdentificationPacket current:
-						Player = new Player(this, server, current.Username);
+						player = new Player(this, current.Username);
+
+						playerStore.Add(player);
 
 						var joining = new Joining(
-							Player,
 							current.ProtocolVersion,
 							current.Username,
 							current.VerificationKey,
 							current.Unused);
 
-						joining = await eventDispatcher
-							.DispatchAsync(joining, source.Token)
-							.ConfigureAwait(false);
+						joining = await eventDispatcher.DispatchAsync(joining, source.Token).ConfigureAwait(false);
 
-						await outgoing.Writer.WriteAsync(
-							new ServerIdentificationPacket
-							{
-								Name = joining.Name,
-								MessageOfTheDay = joining.MessageOfTheDay,
-								IsOperator = joining.IsOperator
-							}).ConfigureAwait(false);
+						var identification = new ServerIdentificationPacket
+						{
+							Name = joining.Name,
+							MessageOfTheDay = joining.MessageOfTheDay,
+							IsOperator = joining.IsOperator,
+						};
 
+						await outgoing.Writer.WriteAsync(identification).ConfigureAwait(false);
 						break;
 				}
 			}
@@ -94,6 +81,10 @@ public sealed class Client(
 		{
 			logger.LogError(exception, "Unexpected exception while handling client");
 		}
+
+		playerStore.Remove(player?.Username);
+
+		await eventDispatcher.DispatchAsync(new Leaving(), source.Token).ConfigureAwait(false);
 
 		// We can't use the write method since the write loop has finished,
 		// hence we need to manually send the disconnect packet here.
@@ -123,6 +114,8 @@ public sealed class Client(
 		}
 
 		connection.Abort(new ConnectionAbortedException(reason));
+
+		await connection.DisposeAsync().ConfigureAwait(false);
 	}
 
 	private async Task ReadingAsync()
@@ -193,5 +186,16 @@ public sealed class Client(
 		{
 			logger.LogError(exception, "Unexpected exception while writing to client");
 		}
+	}
+
+	public void Stop(string stop)
+	{
+		reason = stop;
+		source.Cancel();
+	}
+
+	public void Dispose()
+	{
+		source.Dispose();
 	}
 }

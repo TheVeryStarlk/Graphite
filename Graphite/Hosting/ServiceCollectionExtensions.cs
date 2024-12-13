@@ -1,4 +1,7 @@
-﻿using Graphite.Eventing;
+﻿using Graphite.Abstractions;
+using Graphite.Abstractions.Eventing;
+using Graphite.Abstractions.Worlds;
+using Graphite.Eventing;
 using Graphite.Worlds;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
@@ -10,30 +13,28 @@ namespace Graphite.Hosting;
 
 public static class ServiceCollectionExtensions
 {
-	public static IServiceCollection AddGraphite(this IServiceCollection services)
+	public static IServiceCollection AddGraphite<T>(this IServiceCollection services) where T : Controller
 	{
+		services.AddHostedService<WorkerService>();
+
+		services.AddSingleton<Controller, T>();
+		services.AddSingleton<IWorldContainer, WorldContainer>();
+		services.AddSingleton<IPlayerStore, PlayerStore>();
 		services.AddSingleton<EventDispatcher>();
 
-		services.AddTransient<Func<Server, ConnectionContext, byte, Client>>(provider =>
-			(server, connection, identifier) => new Client(
-				provider.GetRequiredService<ILogger<Client>>(),
-				server,
-				connection,
-				provider.GetRequiredService<EventDispatcher>(),
-				identifier));
-
-		services.AddTransient<Func<Server, WorldContainer>>(provider =>
-			server => new WorldContainer(
-				provider.GetRequiredService<ILogger<WorldContainer>>(),
-				server));
+		services.AddTransient<Listener>();
 
 		services.AddTransient<IConnectionListenerFactory>(provider => new SocketTransportFactory(
 			Options.Create(new SocketTransportOptions()),
 			provider.GetRequiredService<ILoggerFactory>()));
 
-		services.AddTransient<Server>();
-
-		services.AddHostedService<WorkerService>();
+		services.AddTransient<Func<ConnectionContext, byte, Client>>(provider =>
+			(connection, identifier) => new Client(
+				provider.GetRequiredService<ILogger<Client>>(),
+				(PlayerStore) provider.GetRequiredService<IPlayerStore>(),
+				provider.GetRequiredService<EventDispatcher>(),
+				connection,
+				identifier));
 
 		return services;
 	}

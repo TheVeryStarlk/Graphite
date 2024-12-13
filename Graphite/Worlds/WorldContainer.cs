@@ -1,36 +1,28 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Graphite.Abstractions.Worlds;
+using Microsoft.Extensions.Logging;
 
 namespace Graphite.Worlds;
 
-public sealed class WorldContainer(ILogger<WorldContainer> logger, Server server)
+internal sealed class WorldContainer(ILogger<WorldContainer> logger) : IWorldContainer
 {
-	public IReadOnlyDictionary<string, World> Worlds => worlds;
+	public IReadOnlyDictionary<string, IWorld> Worlds => worlds;
 
-	private readonly Dictionary<string, World> worlds = [];
+	private readonly Dictionary<string, IWorld> worlds = [];
 
-	public async ValueTask CreateAsync(
-		string name,
-		IGenerator generator,
-		short width = 128,
-		short height = 64,
-		short length = 128)
+	public void Create(string name, short width, short height, short length)
 	{
+		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
+		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
+		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(length);
+
 		if (worlds.ContainsKey(name))
 		{
-			throw new InvalidOperationException("World is already registered.");
+			throw new InvalidOperationException("World already exists.");
 		}
 
-		var world = new World(server, name, width, height, length);
-
-		await generator.GenerateAsync(world).ConfigureAwait(false);
-
+		var world = new World(name, width, height, length);
 		worlds[name] = world;
 
 		logger.LogInformation("Created world: \"{Name}\"", name);
-	}
-
-	public void Delete(string name)
-	{
-		worlds.Remove(name);
 	}
 }

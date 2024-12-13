@@ -1,46 +1,34 @@
-﻿using System.IO.Compression;
+﻿using Graphite.Abstractions.Worlds;
+using System.Buffers.Binary;
+using System.IO.Compression;
 
 namespace Graphite.Worlds;
 
-public sealed class World
+internal sealed class World(string name, short width, short height, short length) : IWorld
 {
-	public string Name { get; }
+	public string Name => name;
 
-	public short Width { get; }
+	public short Width => width;
 
-	public short Height { get; }
+	public short Height => height;
 
-	public short Length { get; }
-
-	public IEnumerable<Block> Blocks => blocks;
+	public short Length => length;
 
 	public Block this[short x, short y, short z] => blocks[x + Width * (z + y * Length)];
 
-	private readonly Block[] blocks;
-	private readonly Server server;
+	internal Block[] Blocks => blocks;
 
-	public World(Server server, string name, short width = 128, short height = 64, short length = 128)
-	{
-		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
-		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
-		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(length);
-
-		this.server = server;
-
-		Name = name;
-		Width = width;
-		Height = height;
-		Length = length;
-
-		blocks = new Block[width * height * length];
-	}
+	private readonly Block[] blocks = new Block[width * height * length];
 
 	public byte[][] Serialize()
 	{
 		using var result = new MemoryStream();
 		using var compression = new GZipStream(result, CompressionMode.Compress);
 
-		compression.WriteInteger(blocks.Length);
+		Span<byte> buffer = stackalloc byte[sizeof(int)];
+		BinaryPrimitives.WriteInt32BigEndian(buffer, blocks.Length);
+
+		compression.Write(buffer);
 		compression.Write(blocks.Cast<byte>().ToArray());
 
 		compression.Close();

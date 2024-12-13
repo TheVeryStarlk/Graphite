@@ -1,17 +1,21 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Graphite.Abstractions.Eventing;
+using Microsoft.Extensions.Logging;
 
 namespace Graphite.Eventing;
 
-public sealed class EventDispatcher(ILogger<EventDispatcher> logger)
+internal sealed class EventDispatcher
 {
-	private readonly Dictionary<Type, Delegate> events = [];
+	private readonly ILogger<EventDispatcher> logger;
+	private readonly IDictionary<Type, Delegate> events;
 
-	public void Register(Type type, Delegate callback)
+	public EventDispatcher(ILogger<EventDispatcher> logger, Controller controller)
 	{
-		if (!events.TryAdd(type, callback))
-		{
-			throw new InvalidOperationException("Event is already registered.");
-		}
+		this.logger = logger;
+
+		var registry = new Registry();
+		controller.Register(registry);
+
+		events = registry.Events;
 	}
 
 	public async Task<T> DispatchAsync<T>(T original, CancellationToken cancellationToken)
