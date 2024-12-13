@@ -3,9 +3,8 @@ using Graphite.Abstractions.Eventing;
 using Graphite.Abstractions.Eventing.Sources.Listener;
 using Graphite.Abstractions.Eventing.Sources.Player;
 using Graphite.Abstractions.Worlds;
-using Microsoft.Extensions.Logging;
 
-namespace Graphite.Example;
+namespace Graphite.Web;
 
 internal sealed class DefaultController(
 	ILogger<DefaultController> logger,
