@@ -2,5 +2,5 @@
 
 public interface IListener
 {
-	public void Stop(string reason);
+    public void Stop(string reason);
 }

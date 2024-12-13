@@ -2,5 +2,5 @@
 
 public interface IPlayerStore
 {
-	public IReadOnlyDictionary<string, IPlayer> Players { get; }
+    public IReadOnlyDictionary<string, IPlayer> Players { get; }
 }

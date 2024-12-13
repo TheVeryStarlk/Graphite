@@ -2,7 +2,7 @@
 
 public sealed class Stopping(string reason) : Event<IListener>
 {
-	public string Reason => reason;
+    public string Reason => reason;
 
-	public TimeSpan Timeout { get; set; } = TimeSpan.FromMinutes(1);
+    public TimeSpan Timeout { get; set; } = TimeSpan.FromMinutes(1);
 }

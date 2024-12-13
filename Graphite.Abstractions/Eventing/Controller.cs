@@ -2,5 +2,5 @@
 
 public abstract class Controller
 {
-	public abstract void Register(Registry registry);
+    public abstract void Register(Registry registry);
 }

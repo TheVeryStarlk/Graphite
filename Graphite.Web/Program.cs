@@ -12,19 +12,19 @@ application.UseHttpsRedirection();
 
 application.MapGet("/ws", async (HttpContext context) =>
 {
-	if (!context.WebSockets.IsWebSocketRequest)
-	{
-		return Results.BadRequest();
-	}
+    if (!context.WebSockets.IsWebSocketRequest)
+    {
+        return Results.BadRequest();
+    }
 
-	using var socket = await context.WebSockets.AcceptWebSocketAsync();
+    using var socket = await context.WebSockets.AcceptWebSocketAsync();
 
-	await socket.CloseAsync(
-		WebSocketCloseStatus.NormalClosure,
-		string.Empty,
-		CancellationToken.None);
+    await socket.CloseAsync(
+        WebSocketCloseStatus.NormalClosure,
+        string.Empty,
+        CancellationToken.None);
 
-	return Results.Ok();
+    return Results.Ok();
 });
 
 application.Run();

@@ -2,14 +2,14 @@
 
 public sealed class DisconnectPacket : IOutgoingPacket
 {
-	public byte Type => 0x0E;
+    public byte Type => 0x0E;
 
-	public int Length => 64;
+    public int Length => 64;
 
-	public required string Reason { get; init; }
+    public required string Reason { get; init; }
 
-	public void Write(ref SpanWriter writer)
-	{
-		writer.WriteString(Reason);
-	}
+    public void Write(ref SpanWriter writer)
+    {
+        writer.WriteString(Reason);
+    }
 }

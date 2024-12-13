@@ -4,7 +4,7 @@ namespace Graphite.Abstractions;
 
 public interface IClient
 {
-	public ValueTask WriteAsync(params IOutgoingPacket[] packets);
+    public ValueTask WriteAsync(params IOutgoingPacket[] packets);
 
-	public void Stop(string reason);
+    public void Stop(string reason);
 }
