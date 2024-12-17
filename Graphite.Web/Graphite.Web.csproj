@@ -2,8 +2,9 @@
 
 	<PropertyGroup>
 		<TargetFramework>net9.0</TargetFramework>
-		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
+		<PublishAot>true</PublishAot>
+		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
 	<ItemGroup>
