@@ -18,7 +18,7 @@ internal sealed class DefaultController(
 
         registry.For<IPlayer>(subscriber =>
         {
-            logger.LogInformation("Registering player events...");
+            // logger.LogInformation("Registering player events...");
 
             subscriber.On<Joining>(async (player, _, _) =>
             {
