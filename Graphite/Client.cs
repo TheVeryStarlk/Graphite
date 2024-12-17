@@ -60,7 +60,7 @@ internal sealed class Client(
                             current.VerificationKey,
                             current.Unused);
 
-                        joining = await eventDispatcher.DispatchAsync(joining, source.Token).ConfigureAwait(false);
+                        joining = await eventDispatcher.DispatchAsync(Player, joining, source.Token).ConfigureAwait(false);
 
                         var identification = new ServerIdentificationPacket
                         {
@@ -83,9 +83,7 @@ internal sealed class Client(
             logger.LogError(exception, "Unexpected exception while handling client");
         }
 
-        Player = null;
-
-        await eventDispatcher.DispatchAsync(new Leaving(), source.Token).ConfigureAwait(false);
+        await eventDispatcher.DispatchAsync(Player, new Leaving(), source.Token).ConfigureAwait(false);
 
         // We can't use the write method since the write loop has finished,
         // hence we need to manually send the disconnect packet here.
@@ -113,6 +111,8 @@ internal sealed class Client(
         {
             // Nothing to do here.
         }
+
+        Player = null;
 
         connection.Abort(new ConnectionAbortedException(reason));
 

@@ -18,9 +18,9 @@ internal sealed class EventDispatcher
         events = registry.Events;
     }
 
-    public async Task<T> DispatchAsync<T>(T original, CancellationToken cancellationToken)
+    public async Task<TEvent> DispatchAsync<TEvent, TSource>(TSource source, TEvent original, CancellationToken cancellationToken)
     {
-        if (!events.TryGetValue(typeof(T), out var value))
+        if (!events.TryGetValue(typeof(TEvent), out var value))
         {
             return original;
         }
@@ -29,19 +29,19 @@ internal sealed class EventDispatcher
         {
             switch (value)
             {
-                case TaskDelegate<T> @delegate:
-                    await @delegate(original, cancellationToken).ConfigureAwait(false);
+                case TaskDelegate<TSource, TEvent> @delegate:
+                    await @delegate(source, original, cancellationToken).ConfigureAwait(false);
                     break;
 
-                case Action<T> action:
-                    action(original);
+                case Action<TSource, TEvent> action:
+                    action(source, original);
                     break;
             }
         }
         catch (Exception exception)
         {
             logger.LogError(exception, "An exception occurred while running event.");
-            events.Remove(typeof(T));
+            events.Remove(typeof(TEvent));
         }
 
         return original;

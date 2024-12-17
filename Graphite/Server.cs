@@ -29,7 +29,7 @@ internal sealed class Server(
         source = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
         var starting = await eventDispatcher
-            .DispatchAsync(new Starting(), source.Token)
+            .DispatchAsync(this, new Starting(), source.Token)
             .ConfigureAwait(false);
 
         await using var listener = await listenerFactory
@@ -63,7 +63,7 @@ internal sealed class Server(
         }
 
         var stopping = await eventDispatcher
-            .DispatchAsync(new Stopping(reason), source.Token)
+            .DispatchAsync(this, new Stopping(reason), source.Token)
             .ConfigureAwait(false);
 
         await listener.UnbindAsync(CancellationToken.None).ConfigureAwait(false);

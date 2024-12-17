@@ -13,16 +13,19 @@ internal sealed class DefaultController(
     public override void Register(Registry registry)
     {
         registry.For<IServer>(subscriber =>
-            subscriber.On<Starting>(_ =>
+            subscriber.On<Starting>((_, _) =>
                 worldContainer.Create("Default")));
 
         registry.For<IPlayer>(subscriber =>
         {
             logger.LogInformation("Registering player events...");
 
-            subscriber.On<Joining>(async (joining, _) =>
+            subscriber.On<Joining>(async (player, _, _) =>
             {
                 logger.LogInformation("Someone is joining");
+
+                var world = worldContainer.Worlds["Default"];
+                await player.SpawnAsync(world);
             });
         });
     }

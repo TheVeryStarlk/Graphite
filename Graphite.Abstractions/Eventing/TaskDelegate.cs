@@ -1,3 +1,3 @@
 ﻿namespace Graphite.Abstractions.Eventing;
 
-public delegate Task TaskDelegate<in TEvent>(TEvent original, CancellationToken cancellationToken);
+public delegate Task TaskDelegate<in TSource, in TEvent>(TSource source, TEvent original, CancellationToken cancellationToken);
