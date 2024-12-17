@@ -4,11 +4,13 @@ namespace Graphite.Abstractions;
 
 public interface IPlayer
 {
+    public IServer Server { get; }
+
     public IClient Client { get; }
 
-    public string Username { get; }
-
     public IWorld? World { get; }
+
+    public string Username { get; }
 
     public ValueTask SpawnAsync(
         IWorld world,

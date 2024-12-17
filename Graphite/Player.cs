@@ -8,6 +8,8 @@ namespace Graphite;
 
 internal sealed class Player(Client client, string username) : IPlayer
 {
+    public IServer Server => client.Server;
+
     public IClient Client => client;
 
     public string Username => username;

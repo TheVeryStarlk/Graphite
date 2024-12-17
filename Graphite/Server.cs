@@ -7,16 +7,21 @@ using System.Collections.Concurrent;
 
 namespace Graphite;
 
-internal sealed class Listener(
+internal sealed class Server(
     ILoggerFactory loggerFactory,
     IConnectionListenerFactory listenerFactory,
     EventDispatcher eventDispatcher,
-    Func<ConnectionContext, byte, Client> clientFactory) : IListener, IDisposable
+    Func<ConnectionContext, byte, Client> clientFactory) : IServer, IDisposable
 {
+    public IReadOnlyDictionary<string, IPlayer> Players => pairs.Values
+        .Where(pair => pair.Client.Player is not null)
+        .Select(pair => pair.Client.Player!)
+        .ToDictionary(selector => selector.Username, selector => selector);
+
     private string reason = "No reason specified.";
     private CancellationTokenSource? source;
 
-    private readonly ILogger<Listener> logger = loggerFactory.CreateLogger<Listener>();
+    private readonly ILogger<Server> logger = loggerFactory.CreateLogger<Server>();
     private readonly ConcurrentDictionary<byte, (Client Client, Task Exceution)> pairs = [];
 
     public async Task StartAsync(CancellationToken cancellationToken)

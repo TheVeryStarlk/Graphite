@@ -13,19 +13,22 @@ namespace Graphite;
 
 internal sealed class Client(
     ILogger<Client> logger,
-    PlayerStore playerStore,
     EventDispatcher eventDispatcher,
+    Server server,
     ConnectionContext connection,
     byte identifier) : IClient, IDisposable
 {
+    public IServer Server => server;
+
     public byte Identifier => identifier;
+
+    public IPlayer? Player { get; private set; }
 
     private readonly Channel<IPacket> ingoing = Channel.CreateUnbounded<IPacket>();
     private readonly Channel<IOutgoingPacket> outgoing = Channel.CreateUnbounded<IOutgoingPacket>();
     private readonly CancellationTokenSource source = CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionClosed);
 
     private string reason = "No reason specified.";
-    private Player? player;
 
     public Task StartAsync()
     {
@@ -49,9 +52,7 @@ internal sealed class Client(
                 switch (packet)
                 {
                     case PlayerIdentificationPacket current:
-                        player = new Player(this, current.Username);
-
-                        playerStore.Add(player);
+                        Player = new Player(this, current.Username);
 
                         var joining = new Joining(
                             current.ProtocolVersion,
@@ -82,7 +83,7 @@ internal sealed class Client(
             logger.LogError(exception, "Unexpected exception while handling client");
         }
 
-        playerStore.Remove(player?.Username);
+        Player = null;
 
         await eventDispatcher.DispatchAsync(new Leaving(), source.Token).ConfigureAwait(false);
 

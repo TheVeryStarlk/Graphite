@@ -8,12 +8,11 @@ namespace Graphite.Web;
 
 internal sealed class DefaultController(
     ILogger<DefaultController> logger,
-    IWorldContainer worldContainer,
-    IPlayerStore playerStore) : Controller
+    IWorldContainer worldContainer) : Controller
 {
     public override void Register(Registry registry)
     {
-        registry.For<IListener>(subscriber =>
+        registry.For<IServer>(subscriber =>
             subscriber.On<Starting>(_ =>
                 worldContainer.Create("Default")));
 
@@ -24,11 +23,6 @@ internal sealed class DefaultController(
             subscriber.On<Joining>(async (joining, _) =>
             {
                 logger.LogInformation("Someone is joining");
-
-                var player = playerStore.Players[joining.Username];
-                var world = worldContainer.Worlds["Default"];
-
-                await player.SpawnAsync(world);
             });
         });
     }

@@ -3,13 +3,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Graphite.Hosting;
 
-internal sealed class WorkerService(ILogger<WorkerService> logger, Listener listener) : BackgroundService
+internal sealed class WorkerService(ILogger<WorkerService> logger, Server server) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         try
         {
-            await listener.StartAsync(cancellationToken).ConfigureAwait(false);
+            await server.StartAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (Exception exception)
         {

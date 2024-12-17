@@ -1,6 +1,8 @@
 ﻿namespace Graphite.Abstractions;
 
-public interface IPlayerStore
+public interface IServer
 {
     public IReadOnlyDictionary<string, IPlayer> Players { get; }
+
+    public void Stop(string reason);
 }
