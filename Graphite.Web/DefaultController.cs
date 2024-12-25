@@ -18,7 +18,10 @@ internal sealed class DefaultController(
 
         registry.For<IPlayer>(subscriber =>
         {
-            // logger.LogInformation("Registering player events...");
+            subscriber.On<Moved>(async (player, _, _) =>
+            {
+                await player.SendMessageAsync("You moved!");
+            });
 
             subscriber.On<Joining>(async (player, _, _) =>
             {
