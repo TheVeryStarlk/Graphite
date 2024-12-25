@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 using System.Buffers;
 using System.Threading.Channels;
+using Graphite.Abstractions.Networking.Packets;
 
 namespace Graphite;
 
@@ -70,6 +71,15 @@ internal sealed class Client(
                         };
 
                         await outgoing.Writer.WriteAsync(identification).ConfigureAwait(false);
+                        break;
+
+                    case MessagePacket current:
+                        var message = new Message
+                        {
+                            Content = current.Message
+                        };
+
+                        await eventDispatcher.DispatchAsync(Player, message, source.Token).ConfigureAwait(false);
                         break;
                 }
             }

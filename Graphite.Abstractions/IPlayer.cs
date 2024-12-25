@@ -20,5 +20,7 @@ public interface IPlayer
         byte yaw = 0,
         byte pitch = 0);
 
+    public ValueTask SendMessageAsync(string message);
+
     public void Kick(string reason);
 }

@@ -1,5 +1,6 @@
 ﻿using Graphite.Abstractions;
 using Graphite.Abstractions.Networking;
+using Graphite.Abstractions.Networking.Packets;
 using Graphite.Abstractions.Networking.Packets.Outgoing;
 using Graphite.Abstractions.Worlds;
 using Graphite.Worlds;
@@ -59,6 +60,15 @@ internal sealed class Player(Client client, string username) : IPlayer
                 Pitch = pitch
             }
         ]).ConfigureAwait(false);
+    }
+
+    public ValueTask SendMessageAsync(string message)
+    {
+        return client.WriteAsync(new MessagePacket
+        {
+            Identifier = 0xFF,
+            Message = message
+        });
     }
 
     public void Kick(string reason)
