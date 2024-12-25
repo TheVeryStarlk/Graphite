@@ -81,6 +81,28 @@ internal sealed class Client(
 
                         await eventDispatcher.DispatchAsync(Player, message, source.Token).ConfigureAwait(false);
                         break;
+
+                    case PositionOrientationPacket current:
+                        var moved = new Moved
+                        {
+                            X = current.X,
+                            Y = current.Y,
+                            Z = current.Z,
+                            Yaw = current.Yaw,
+                            Pitch = current.Pitch,
+                        };
+
+                        await eventDispatcher.DispatchAsync(Player, moved, source.Token).ConfigureAwait(false);
+
+                        var player = (Player) Player!;
+
+                        player.X = current.X;
+                        player.Y = current.Y;
+                        player.Z = current.Z;
+                        player.Yaw = current.Yaw;
+                        player.Pitch = current.Pitch;
+
+                        break;
                 }
             }
         }

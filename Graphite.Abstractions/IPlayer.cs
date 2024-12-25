@@ -12,6 +12,16 @@ public interface IPlayer
 
     public string Username { get; }
 
+    public float X { get; }
+
+    public float Y { get; }
+
+    public float Z { get; }
+
+    public byte Yaw { get; }
+
+    public byte Pitch { get; }
+
     public ValueTask SpawnAsync(
         IWorld world,
         float x = 0,

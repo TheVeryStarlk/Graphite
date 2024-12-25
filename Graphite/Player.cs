@@ -15,6 +15,16 @@ internal sealed class Player(Client client, string username) : IPlayer
 
     public string Username => username;
 
+    public float X { get; internal set; }
+
+    public float Y { get; internal set; }
+
+    public float Z { get; internal set; }
+
+    public byte Yaw { get; internal set; }
+
+    public byte Pitch { get; internal set; }
+
     public IWorld? World { get; private set; }
 
     public async ValueTask SpawnAsync(
